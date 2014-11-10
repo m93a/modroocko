@@ -1,12 +1,3 @@
-// # Quintus platformer example
-//
-// [Run the example](../quintus/examples/platformer/index.html)
-// WARNING: this game must be run from a non-file:// url
-// as it loads a level json file.
-//
-// This is the example from the website homepage, it consists
-// a simple, non-animated platformer with some enemies and a 
-// target for the player.
 window.addEventListener("load",function() {
 
 // Set up an instance of the Quintus engine  and include
@@ -52,6 +43,17 @@ Q.Sprite.extend("Player",{
         Q.stageScene("endGame",1, { label: "You Won!" }); 
         this.destroy();
       }
+    });
+    
+    this.on("bump.left,bump.right",function(c){
+     if(c.tile == 6){
+      
+      this.p.vy = -Math.abs(this.p.vy);
+      
+      (Q.inputs.up)
+       &&(this.p.vy   = -150)
+       &&(Q.inputs.up = false);
+     }
     });
 
   }
@@ -102,7 +104,7 @@ Q.Sprite.extend("Enemy",{
 Q.scene("level1",function(stage) {
 
   // Add in a repeater for a little parallax action
-  stage.insert(new Q.Repeater({ asset: "background-wall.png", speedX: 0.5, speedY: 0.5 }));
+  stage.insert(new Q.Repeater({ asset: "background-wall.png", speedX: 1, speedY: 1 }));
 
   // Add in a tile layer, and make it the collision layer
   stage.collisionLayer(new Q.TileLayer({
