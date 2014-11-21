@@ -1,4 +1,19 @@
+var BLOCK_AIR   = 0,
+    BLOCK_GRASS = 1,
+    BLOCK_DIRT  = 2,
+    BLOCK_WALL  = 3,
+    BLOCK_ROOF  = 5,
+    BLOCK_GRAB  = 9,
+    BLOCK_SOLID = 10,
+    BLOCK_ROOF_LEFT  = 4,
+    BLOCK_ROOF_RIGHT = 6,
+    BLOCK_ANTENNA    = 7,
+    BLOCK_CHIMNEY    = 8,
+    BLOCK_PLANKS    = 11;
+
+
 window.addEventListener("load",function() {
+
 
 // Set up an instance of the Quintus engine  and include
 // the Sprites, Scenes, Input and 2D module. The 2D module
@@ -38,21 +53,20 @@ Q.Sprite.extend("Player",{
     // hit.sprite is called everytime the player collides with a sprite
     this.on("hit.sprite",function(collision) {
 
-      // Check the collision, if it's the Tower, you win!
-      if(collision.obj.isA("Tower")) {
+      // Check the collision, if it's the Horse, you win!
+      if(collision.obj.isA("Horse")) {
         Q.stageScene("endGame",1, { label: "You Won!" }); 
         this.destroy();
       }
     });
     
     this.on("bump.left,bump.right",function(c){
-     if(c.tile == 6){
+     if(c.tile == 9){
       
-      this.p.vy = -Math.abs(this.p.vy);
+      this.p.y -= .3;
+      ( this.p.vy > 0 )&&( this.p.vy = 0 );
+      ( Q.inputs.up   )&&( (this.p.vy   = -200),(Q.inputs.up = false) );
       
-      (Q.inputs.up)
-       &&(this.p.vy   = -150)
-       &&(Q.inputs.up = false);
      }
     });
 
@@ -61,13 +75,14 @@ Q.Sprite.extend("Player",{
 });
 
 
-// ## Tower Sprite
-// Sprites can be simple, the Tower sprite just sets a custom sprite sheet
-Q.Sprite.extend("Tower", {
+// ## Horse Sprite
+Q.Sprite.extend("Horse", {
   init: function(p) {
-    this._super(p, { sheet: 'tower' });
+    this._super(p, { sheet: 'horse' });
   }
 });
+
+Q.Sprite.Horse.add('2d');
 
 // ## Enemy Sprite
 // Create the Enemy class to add in some baddies
@@ -99,19 +114,50 @@ Q.Sprite.extend("Enemy",{
   }
 });
 
+
+// General level helper function
+function loadLevel(n,stage){
+ // Add in a repeater for a little parallax action
+ stage.insert(new Q.Repeater({ asset: "background-wall"+n+".png", speedX: 1, speedY: 1 }));
+
+ // Add in a tile layer, and make it the collision layer
+ var layer = new Q.TileLayer({
+                            dataAsset: 'level'+n+'.json',
+                            sheet:     'tiles'});
+ 
+ layer.tileCollisionObjects[BLOCK_ROOF_LEFT] = {p:{
+  w: 32, h: 32,
+  cx:16, cy:16,
+  points: [[-16,16],[16,-16],[16,16]]
+ }};
+ 
+ layer.tileCollisionObjects[BLOCK_ROOF_RIGHT] = {p:{
+  w: 32, h: 32,
+  cx:16, cy:16,
+  points: [[-16,-16],[16,16],[-16,16]]
+ }};
+ 
+ layer.tileCollisionObjects[BLOCK_PLANKS] = {p:{
+  w: 32, h: 32,
+  cx:16, cy:16,
+  points: [[-16,-16],[16,-16],[16,-10],[-16,-10]]
+ }};
+ 
+ stage.collisionLayer(layer);
+};
+
+
+
+
+
+
+
 // ## Level1 scene
 // Create a new scene called level 1
 Q.scene("level1",function(stage) {
-
-  // Add in a repeater for a little parallax action
-  stage.insert(new Q.Repeater({ asset: "background-wall.png", speedX: 1, speedY: 1 }));
-
-  // Add in a tile layer, and make it the collision layer
-  stage.collisionLayer(new Q.TileLayer({
-                             dataAsset: 'level.json',
-                             sheet:     'tiles' }));
-
-
+  
+  loadLevel(1,stage);
+  
   // Create the player and add them to the stage
   var player = stage.insert(new Q.Player());
 
@@ -123,8 +169,8 @@ Q.scene("level1",function(stage) {
   stage.insert(new Q.Enemy({ x: 700, y: 0 }));
   stage.insert(new Q.Enemy({ x: 800, y: 0 }));
 
-  // Finally add in the tower goal
-  stage.insert(new Q.Tower({ x: 180, y: 50 }));
+  // Finally add in the horse goal
+  stage.insert(new Q.Horse({ x: 32*10, y: 32*14 }));
 });
 
 // To display a game over / game won popup box, 
@@ -155,7 +201,7 @@ Q.scene('endGame',function(stage) {
 // Q.load can be called at any time to load additional assets
 // assets that are already loaded will be skipped
 // The callback will be triggered when everything is loaded
-Q.load("sprites.png, sprites.json, level.json, tiles.png, background-wall.png", function() {
+Q.load("sprites.png, sprites.json, level1.json, tiles.png, background-wall.png", function() {
   // Sprites sheets can be created manually
   Q.sheet("tiles","tiles.png", { tilew: 32, tileh: 32 });
 
