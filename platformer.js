@@ -35,24 +35,16 @@ Q.Sprite.extend("Player",{
 
     // You can call the parent's constructor with this._super(..)
     this._super(p, {
-      sheet: "player",  // Setting a sprite sheet sets sprite width and height
-      x: 410,           // You can also set additional properties that can
-      y: 90             // be overridden on object creation
+      sheet:  "player",
+      sprite: "player",
+      x: 410,
+      y: 90
     });
-
-    // Add in pre-made components to get up and running quickly
-    // The `2d` component adds in default 2d collision detection
-    // and kinetics (velocity, gravity)
-    // The `platformerControls` makes the player controllable by the
-    // default input actions (left, right to move,  up or action to jump)
-    // It also checks to make sure the player is on a horizontal surface before
-    // letting them jump.
-    this.add('2d, platformerControls');
-
-    // Write event handlers to respond hook into behaviors.
-    // hit.sprite is called everytime the player collides with a sprite
+    
+    
+    
     this.on("hit.sprite",function(collision) {
-
+    
       // Check the collision, if it's the Horse, you win!
       if(collision.obj.isA("Horse")) {
         Q.stageScene("endGame",1, { label: "You Won!" }); 
@@ -67,9 +59,31 @@ Q.Sprite.extend("Player",{
       ( this.p.vy > 0 )&&( this.p.vy = 0 );
       ( Q.inputs.up   )&&( (this.p.vy   = -200),(Q.inputs.up = false) );
       
+      this.climbing = true;
+      
      }
     });
-
+    
+    
+    this.add('2d, platformerControls, animation');
+    
+  },
+  
+  
+  step: function(dt){
+   if(this.p.landed>0){
+    if(this.p.vx){
+     this.play( "walk_" +this.p.direction );
+    }else{
+     this.play( "stand_"+this.p.direction );
+    }
+   }else if(this.climbing){
+    this.play( "climb_" +this.p.direction );
+   }else{
+    this.play( "jump_"  +this.p.direction );
+   }
+   
+   this.climbing = false;
   }
 
 });
@@ -78,11 +92,11 @@ Q.Sprite.extend("Player",{
 // ## Horse Sprite
 Q.Sprite.extend("Horse", {
   init: function(p) {
-    this._super(p, { sheet: 'horse' });
+    this._super(p, { sheet: 'horse', scale: 4 });
+    this.add('2d');
   }
 });
 
-Q.Sprite.Horse.add('2d');
 
 // ## Enemy Sprite
 // Create the Enemy class to add in some baddies
@@ -150,8 +164,6 @@ function loadLevel(n,stage){
 
 
 
-
-
 // ## Level1 scene
 // Create a new scene called level 1
 Q.scene("level1",function(stage) {
@@ -170,7 +182,7 @@ Q.scene("level1",function(stage) {
   stage.insert(new Q.Enemy({ x: 800, y: 0 }));
 
   // Finally add in the horse goal
-  stage.insert(new Q.Horse({ x: 32*10, y: 32*14 }));
+  stage.insert(new Q.Horse({ x: 32*12, y: 32*14 }));
 });
 
 // To display a game over / game won popup box, 
@@ -204,10 +216,22 @@ Q.scene('endGame',function(stage) {
 Q.load("sprites.png, sprites.json, level1.json, tiles.png, background-wall.png", function() {
   // Sprites sheets can be created manually
   Q.sheet("tiles","tiles.png", { tilew: 32, tileh: 32 });
-
+  
+  
+  Q.animations("player", {
+   stand_right:{ frames: [0],   rate: 1/2, flip: false, loop: false },
+   stand_left: { frames: [0],   rate: 1/2, flip: "x",   loop: false },
+   climb_right:{ frames: [2],   rate: 1/2, flip: false, loop: false },
+   climb_left: { frames: [2],   rate: 1/2, flip: "x",   loop: false },
+   walk_right: { frames: [0,1], rate: 1/2, flip: false, loop: true  },
+   walk_left:  { frames: [0,1], rate: 1/2, flip: "x",   loop: true  },
+   jump_right: { frames: [1,2], rate: 1/2, flip: false, loop: true  },
+   jump_left:  { frames: [1,2], rate: 1/2, flip: "x",   loop: true  },
+  });
+  
   // Or from a .json asset that defines sprite locations
   Q.compileSheets("sprites.png","sprites.json");
-
+  
   // Finally, call stageScene to run the game
   Q.stageScene("level1");
 });
