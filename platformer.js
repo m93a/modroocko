@@ -12,8 +12,6 @@ var BLOCK_AIR   = 0,
     BLOCK_PLANKS    = 11;
 
 
-window.addEventListener("load",function() {
-
 
 // Set up an instance of the Quintus engine  and include
 // the Sprites, Scenes, Input and 2D module. The 2D module
@@ -25,9 +23,10 @@ var Q = window.Q = Quintus()
         // And turn on default input controls and touch input (for UI)
         .controls().touch()
 
+
+
+
 // ## Player Sprite
-// The very basic player sprite, this is just a normal sprite
-// using the player sprite sheet with default controls added to it.
 Q.Sprite.extend("Player",{
 
   // the init constructor is called on creation
@@ -40,7 +39,6 @@ Q.Sprite.extend("Player",{
       x: 410,
       y: 90
     });
-    
     
     
     this.on("hit.sprite",function(collision) {
@@ -88,6 +86,19 @@ Q.Sprite.extend("Player",{
 
 });
 
+Q.Player.animation = {
+  stand_right:{ frames: [0],   rate: 1/2, flip: false, loop: false },
+  stand_left: { frames: [0],   rate: 1/2, flip: "x",   loop: false },
+  climb_right:{ frames: [2],   rate: 1/2, flip: false, loop: false },
+  climb_left: { frames: [2],   rate: 1/2, flip: "x",   loop: false },
+  walk_right: { frames: [0,1], rate: 1/2, flip: false, loop: true  },
+  walk_left:  { frames: [0,1], rate: 1/2, flip: "x",   loop: true  },
+  jump_right: { frames: [1,2], rate: 1/2, flip: false, loop: true  },
+  jump_left:  { frames: [1,2], rate: 1/2, flip: "x",   loop: true  },
+};
+
+
+
 
 // ## Horse Sprite
 Q.Sprite.extend("Horse", {
@@ -98,8 +109,9 @@ Q.Sprite.extend("Horse", {
 });
 
 
+
+
 // ## Enemy Sprite
-// Create the Enemy class to add in some baddies
 Q.Sprite.extend("Enemy",{
   init: function(p) {
     this._super(p, { sheet: 'enemy', vx: 100 });
@@ -127,6 +139,8 @@ Q.Sprite.extend("Enemy",{
     });
   }
 });
+
+
 
 
 // General level helper function
@@ -164,30 +178,7 @@ function loadLevel(n,stage){
 
 
 
-// ## Level1 scene
-// Create a new scene called level 1
-Q.scene("level1",function(stage) {
-  
-  loadLevel(1,stage);
-  
-  // Create the player and add them to the stage
-  var player = stage.insert(new Q.Player());
 
-  // Give the stage a moveable viewport and tell it
-  // to follow the player.
-  stage.add("viewport").follow(player);
-
-  // Add in a couple of enemies
-  stage.insert(new Q.Enemy({ x: 700, y: 0 }));
-  stage.insert(new Q.Enemy({ x: 800, y: 0 }));
-
-  // Finally add in the horse goal
-  stage.insert(new Q.Horse({ x: 32*12, y: 32*14 }));
-});
-
-// To display a game over / game won popup box, 
-// create a endGame scene that takes in a `label` option
-// to control the displayed message.
 Q.scene('endGame',function(stage) {
   var container = stage.insert(new Q.UI.Container({
     x: Q.width/2, y: Q.height/2, fill: "rgba(0,0,0,0.5)"
@@ -209,42 +200,5 @@ Q.scene('endGame',function(stage) {
   container.fit(20);
 });
 
-// ## Asset Loading and Game Launch
-// Q.load can be called at any time to load additional assets
-// assets that are already loaded will be skipped
-// The callback will be triggered when everything is loaded
-Q.load("sprites.png, sprites.json, level1.json, tiles.png, background-wall.png", function() {
-  // Sprites sheets can be created manually
-  Q.sheet("tiles","tiles.png", { tilew: 32, tileh: 32 });
-  
-  
-  Q.animations("player", {
-   stand_right:{ frames: [0],   rate: 1/2, flip: false, loop: false },
-   stand_left: { frames: [0],   rate: 1/2, flip: "x",   loop: false },
-   climb_right:{ frames: [2],   rate: 1/2, flip: false, loop: false },
-   climb_left: { frames: [2],   rate: 1/2, flip: "x",   loop: false },
-   walk_right: { frames: [0,1], rate: 1/2, flip: false, loop: true  },
-   walk_left:  { frames: [0,1], rate: 1/2, flip: "x",   loop: true  },
-   jump_right: { frames: [1,2], rate: 1/2, flip: false, loop: true  },
-   jump_left:  { frames: [1,2], rate: 1/2, flip: "x",   loop: true  },
-  });
-  
-  // Or from a .json asset that defines sprite locations
-  Q.compileSheets("sprites.png","sprites.json");
-  
-  // Finally, call stageScene to run the game
-  Q.stageScene("level1");
-});
 
-// ## Possible Experimentations:
-// 
-// The are lots of things to try out here.
-// 
-// 1. Modify level.json to change the level around and add in some more enemies.
-// 2. Add in a second level by creating a level2.json and a level2 scene that gets
-//    loaded after level 1 is complete.
-// 3. Add in a title screen
-// 4. Add in a hud and points for jumping on enemies.
-// 5. Add in a `Repeater` behind the TileLayer to create a paralax scrolling effect.
 
-});
