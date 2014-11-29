@@ -146,12 +146,19 @@ Q.Sprite.extend("Enemy",{
 // General level helper function
 function loadLevel(n,stage){
  // Add in a repeater for a little parallax action
- stage.insert(new Q.Repeater({ asset: "background-wall"+n+".png", speedX: 1, speedY: 1 }));
+ stage.insert(new Q.Repeater({
+   asset: "bg-"+n+".png",
+   scale: .33,
+   speedX: 1,
+   speedY: 1,
+   px: 100
+ }));
 
  // Add in a tile layer, and make it the collision layer
  var layer = new Q.TileLayer({
-                            dataAsset: 'level'+n+'.json',
-                            sheet:     'tiles'});
+   dataAsset: 'level'+n+'.json',
+   sheet:     'tiles'
+ });
  
  layer.tileCollisionObjects[BLOCK_ROOF_LEFT] = {p:{
   w: 32, h: 32,
