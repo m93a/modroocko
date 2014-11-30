@@ -1,15 +1,12 @@
-var BLOCK_AIR   = 0,
-    BLOCK_GRASS = 1,
-    BLOCK_DIRT  = 2,
-    BLOCK_WALL  = 3,
-    BLOCK_ROOF  = 5,
-    BLOCK_GRAB  = 9,
-    BLOCK_SOLID = 10,
+var BLOCK_AIR        = 0,
+    BLOCK_SOLID      = 1,
+    BLOCK_SOLID_TOP  = 2,
+    BLOCK_GRAB       = 9,
+    BLOCK_GRAB_TOP   = 3,
     BLOCK_ROOF_LEFT  = 4,
-    BLOCK_ROOF_RIGHT = 6,
+    BLOCK_ROOF_RIGHT = 5,
     BLOCK_ANTENNA    = 7,
-    BLOCK_CHIMNEY    = 8,
-    BLOCK_PLANKS    = 11;
+    BLOCK_CHIMNEY    = 8;
 
 
 
@@ -44,14 +41,14 @@ Q.Sprite.extend("Player",{
     this.on("hit.sprite",function(collision) {
     
       // Check the collision, if it's the Horse, you win!
-      if(collision.obj.isA("Horse")) {
+      if(false&&collision.obj.isA("Horse")) {
         Q.stageScene("endGame",1, { label: "You Won!" }); 
         this.destroy();
       }
     });
     
     this.on("bump.left,bump.right",function(c){
-     if(c.tile == 9){
+     if(c.tile == BLOCK_GRAB || c.tile == BLOCK_GRAB_TOP){
       
       this.p.y -= .3;
       ( this.p.vy > 0 )&&( this.p.vy = 0 );
@@ -148,12 +145,15 @@ function loadLevel(n,stage){
  // Add in a repeater for a little parallax action
  stage.insert(new Q.Repeater({
    asset: "bg-"+n+".png",
-   scale: .33,
+   scale: .181,
    speedX: 1,
-   speedY: 1,
-   px: 100
+   speedY: 1
  }));
-
+ 
+ //Scale the viewport
+ stage.add("viewport");
+ stage.viewport.scale = 2;
+ 
  // Add in a tile layer, and make it the collision layer
  var layer = new Q.TileLayer({
    dataAsset: 'level'+n+'.json',
@@ -172,7 +172,13 @@ function loadLevel(n,stage){
   points: [[-16,-16],[16,16],[-16,16]]
  }};
  
- layer.tileCollisionObjects[BLOCK_PLANKS] = {p:{
+ layer.tileCollisionObjects[BLOCK_SOLID_TOP] = {p:{
+  w: 32, h: 32,
+  cx:16, cy:16,
+  points: [[-16,-16],[16,-16],[16,-10],[-16,-10]]
+ }};
+ 
+ layer.tileCollisionObjects[BLOCK_GRAB_TOP] = {p:{
   w: 32, h: 32,
   cx:16, cy:16,
   points: [[-16,-16],[16,-16],[16,-10],[-16,-10]]

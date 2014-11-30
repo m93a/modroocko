@@ -7,10 +7,10 @@ Q.scene("level1",function(stage) {
   stage.add("viewport").follow(player);
   
   //enemies
-  stage.insert(new Q.Enemy({ x: 700, y: 0 }));
-  stage.insert(new Q.Enemy({ x: 800, y: 0 }));
+  //stage.insert(new Q.Enemy({ x: 700, y: 0 }));
+  //stage.insert(new Q.Enemy({ x: 800, y: 0 }));
   
   //horse
-  stage.insert(new Q.Horse({ x: 32*12, y: 32*14 }));
+  stage.insert(new Q.Horse({ x: 32*16, y: 32*23 }));
   
 });
