@@ -211,7 +211,7 @@ function loadQuest( n, stage ){
       y: 32*diag[d][1]
     });
     
-    trig.on("bump.top, bump.bottom, bump.left, bump.right",function(e){
+    trig.on("bump",function(e){
       if( e.obj.isA("Player") ){
         
         console.log(diag[d][2]+": "+diag[d][3]);
