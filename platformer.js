@@ -125,15 +125,16 @@ Q.Sprite.extend("Enemy",{
         collision.obj.destroy();
       }
     });
+  }
+});
 
-    // If the enemy gets hit on the top, destroy it
-    // and give the user a "hop"
-    this.on("bump.top",function(collision) {
-      if(collision.obj.isA("Player")) { 
-        this.destroy();
-        collision.obj.p.vy = -300;
-      }
-    });
+
+
+// ## Trigger Sprite
+Q.Sprite.extend("Trigger",{
+  init: function(p) {
+    this._super(p, { sheet: 'enemy' });
+    this.add('2d');
   }
 });
 
@@ -141,7 +142,7 @@ Q.Sprite.extend("Enemy",{
 
 
 // General level helper function
-function loadLevel(n,stage){
+function loadLevel( n, stage ){
  // Add in a repeater for a little parallax action
  stage.insert(new Q.Repeater({
    asset: "bg-"+n+".png",
@@ -185,6 +186,47 @@ function loadLevel(n,stage){
  }};
  
  stage.collisionLayer(layer);
+ 
+ window.lq = function( n ){
+   return loadQuest( n, stage );
+ };
+ 
+};
+
+
+
+
+// General quest helper function
+function loadQuest( n, stage ){
+  
+  var d = -1;
+  var diag = stage.scripts[n].diag;
+  
+  function placeNextDiag(){
+    
+    d++;
+    
+    var trig = new Q.Trigger({
+      x: 32*diag[d][0],
+      y: 32*diag[d][1]
+    });
+    
+    trig.on("bump.top, bump.bottom, bump.left, bump.right",function(e){
+      if( e.obj.isA("Player") ){
+        
+        console.log(diag[d][2]+": "+diag[d][3]);
+        trig.destroy();
+        placeNextDiag();
+        
+      }
+    });
+    
+    stage.insert(trig);
+    
+  }
+  
+  placeNextDiag();
+  
 };
 
 
@@ -196,11 +238,12 @@ Q.scene('endGame',function(stage) {
   var container = stage.insert(new Q.UI.Container({
     x: Q.width/2, y: Q.height/2, fill: "rgba(0,0,0,0.5)"
   }));
-
+  
   var button = container.insert(new Q.UI.Button({ x: 0, y: 0, fill: "#CCCCCC",
                                                   label: "Play Again" }))         
   var label = container.insert(new Q.UI.Text({x:10, y: -10 - button.p.h, 
                                                    label: stage.options.label }));
+  
   // When the button is clicked, clear all the stages
   // and restart the game.
   button.on("click",function() {
