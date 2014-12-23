@@ -27,14 +27,23 @@ var Q = window.Q = Quintus()
 Q.Sprite.extend("Player",{
 
   // the init constructor is called on creation
-  init: function(p) {
-
+  init: function(p,inputType) {
+    
+    this.inputType = +inputType||0;
+    
     // You can call the parent's constructor with this._super(..)
     this._super(p, {
       sheet:  "player",
       sprite: "player",
       x: 410,
       y: 90
+    });
+    
+    // platformerInput-ish attributes
+    this.p.direction = "right";
+    this.p.landed = 0;
+    this.on("bump.bottom",function(){
+      this.p.landed = 1/5;
     });
     
     
@@ -47,12 +56,23 @@ Q.Sprite.extend("Player",{
       }
     });
     
+    var climbed = false;
+    
     this.on("bump.left,bump.right",function(c){
      if(c.tile == BLOCK_GRAB || c.tile == BLOCK_GRAB_TOP){
       
+      var up = this.inputType === 0 ? 38
+             : this.inputType === 1 ? 87
+             : undefined;
+      
       this.p.y -= .3;
-      ( this.p.vy > 0 )&&( this.p.vy = 0 );
-      ( Q.inputs.up   )&&( (this.p.vy   = -200),(Q.inputs.up = false) );
+      if( this.p.vy > 0 ){ this.p.vy = 0; }
+      if( key[up] && !climbed ){
+        this.p.vy   = -200;
+        climbed = true;
+      }else if( !key[up] ){
+        climbed = false;
+      }
       
       this.climbing = true;
       
@@ -60,12 +80,52 @@ Q.Sprite.extend("Player",{
     });
     
     
-    this.add('2d, platformerControls, animation');
+    this.add('2d, animation');
     
   },
   
   
+  
   step: function(dt){
+   
+   //controls
+   var up, left, right;
+   switch(this.inputType){
+     
+     case 0:
+       left  = 37;
+       up    = 38;
+       right = 39;
+       break;
+     
+     case 1:
+       left  = 65;
+       up    = 87;
+       right = 68;
+       break;
+     
+   }
+   
+   if( key[left]  ){
+     this.p.vx =-200;
+     this.p.direction = "left";
+   }
+   
+   if( key[right] ){
+     this.p.vx = 200;
+     this.p.direction = "right";
+   }
+   
+   if( !key[left] && !key[right] ){
+     this.p.vx = 0;
+   }
+   
+   if( key[up] && this.p.landed ){
+     this.p.vy =-300;
+   }
+   
+   
+   //animation
    if(this.p.landed>0){
     if(this.p.vx){
      this.play( "walk_" +this.p.direction );
@@ -79,6 +139,10 @@ Q.Sprite.extend("Player",{
    }
    
    this.climbing = false;
+   
+   
+   //landed
+   this.p.landed = Math.max(0, this.landed - dt);
   }
 
 });
@@ -151,9 +215,6 @@ function loadLevel( n, stage ){
    speedY: 1
  }));
  
- //Scale the viewport
- stage.add("viewport");
- stage.viewport.scale = 2;
  
  // Add in a tile layer, and make it the collision layer
  var layer = new Q.TileLayer({
@@ -202,6 +263,8 @@ function loadQuest( n, stage ){
   var d = -1;
   var diag = stage.scripts[n].diag;
   
+  (stage.scripts[n].load || function(){})();
+  
   function placeNextDiag(){
     
     d++;
@@ -225,7 +288,7 @@ function loadQuest( n, stage ){
     
   }
   
-  placeNextDiag();
+  diag.length && placeNextDiag();
   
 };
 
